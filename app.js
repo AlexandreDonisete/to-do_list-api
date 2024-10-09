@@ -1,14 +1,13 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
+const database = require('./config')
+const Task = require('./models/Task')
+const User = require('./models/userz');
 
 let tasks = [];
-// let task = {
-//     id: 0,
-//     name: '',
-//     isDone: false,
-//     creationDate: new Date()
-// }
+    
+(async () => { await database.sync(); })();
 
 app.use(express.json());
 
@@ -17,57 +16,50 @@ app.use(express.json());
 app.use(express.static('public'));
 
 
-// retornando as tasks existentes
-app.get('/', (req, res) => {
-    if (tasks.length === 0) {
-        res.status(204)
-           .send(tasks);
-    }
-    else {
-        res.status(200)
-           .json(tasks);
-    }
+//#region TASKS
+app.get('/tasks', async (req, res) => {
+    const tasks = await Task.findAll(); 
+    res.status(200).json(tasks);
 });
 
-// inserindo uma nova task
-app.post('/tasks', (req, res) => {
-    tasks.push(req.body);
-    res.status(201)
-       .json(req.body);
+app.post('/tasks', async (req, res) => {
+    const task = await Task.create(req.body);
+    res.status(201).json(task);
+});
+
+app.put('/tasks/:id', async (req, res)=>{
+    const taskId = parseInt(req.params.id);
+    
+   await Task.update(
+    req.body,
+    {
+      where: {
+        id: taskId,
+      },
+    },
+   );
+   res.status(200).send();
 })
+
+
+app.delete('/tasks/delete/:id', async (req,res)=>{
+    const task = await Task.destroy({
+        where: {
+          id: req.params.id,
+        },
+      });
+      res.status(201).json(task);
+});
+
+//#endregion
+
+
+
+app.listen(PORT, () => {
+    console.log(`Servidor rodando em http://localhost:${PORT}`);
+});
 
 //desestruturacao aprender
 //stack e heap
 //passando por valor e por referencia variaveis
 //mtos conceitos para lembrar/aprender =)
-
-// atualizando uma task existente
-app.put('/tasks/:id', (req, res) => {
-    const taskId = parseInt(req.params.id);
-    const taskIndex = tasks.findIndex(task => task.id === taskId);
-
-    if (taskIndex !== -1) {
-        tasks[taskIndex] = req.body;
-        res.status(200).json({ message: 'Tarefa atualizado com sucesso!' });
-    } else {
-        res.status(404).json({ message: 'Tarefa não encontrada!' });
-    }
-})
-
-// deletando uma task pelo ID
-app.delete('/tasks/delete/:id', (req, res) => {
-    const taskId = parseInt(req.params.id); // pegando o id da tarefa
-
-    const taskIndex = tasks.findIndex(task => task.id === taskId);
-
-    if (taskIndex !== -1) {
-        tasks.splice(taskIndex, 1); // removendo a tarefa
-        res.status(200).json({ message: 'Tarefa deletada com sucesso!' });
-    } else {
-        res.status(404).json({ message: 'Tarefa não encontrada!' });
-    }
-});
-
-app.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
-});
