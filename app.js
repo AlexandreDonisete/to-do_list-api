@@ -1,59 +1,27 @@
-const express = require('express');
-const app = express();
 const PORT = process.env.PORT || 3000;
-const database = require('./config')
-const Task = require('./models/Task')
-const User = require('./models/userz');
+const express = require('express');
+const path = require('path')
 
-let tasks = [];
-    
+const database = require('./config')
+const taskRoutes = require('./routes/taskRoutes');
+
+const app = express();
+
 (async () => { await database.sync(); })();
 
-app.use(express.json());
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 
 
 /* This is used to make sure that once the server is started, you can reload the browser and see the Express Yourself machine */
 app.use(express.static('public'));
+app.use(express.json());
 
+app.use('/tasks', taskRoutes);
 
-//#region TASKS
-app.get('/tasks', async (req, res) => {
-    const tasks = await Task.findAll(); 
-    res.status(200).json(tasks);
-});
-
-app.post('/tasks', async (req, res) => {
-    const task = await Task.create(req.body);
-    res.status(201).json(task);
-});
-
-app.put('/tasks/:id', async (req, res)=>{
-    const taskId = parseInt(req.params.id);
-    
-   await Task.update(
-    req.body,
-    {
-      where: {
-        id: taskId,
-      },
-    },
-   );
-   res.status(200).send();
+app.get('/', (req, res) => {
+  res.render('index')
 })
-
-
-app.delete('/tasks/delete/:id', async (req,res)=>{
-    const task = await Task.destroy({
-        where: {
-          id: req.params.id,
-        },
-      });
-      res.status(201).json(task);
-});
-
-//#endregion
-
-
 
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);
@@ -63,3 +31,4 @@ app.listen(PORT, () => {
 //stack e heap
 //passando por valor e por referencia variaveis
 //mtos conceitos para lembrar/aprender =)
+

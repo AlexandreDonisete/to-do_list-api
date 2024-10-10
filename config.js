@@ -1,11 +1,15 @@
 require('dotenv').config()
 const { Sequelize } = require('sequelize');
 
-const database = new Sequelize(process.env.DATABASE, process.env.DB_USER, process.env.DB_PASSWORD, {
-    host: process.env.DB_HOST,
-    dialect: 'postgres',
-    port: process.env.DB_PORT
-})
+const database = new Sequelize(process.env.DB_URL, {
+    dialect: 'postgres', // Especifica o tipo de banco (PostgreSQL)
+    dialectOptions: {
+      ssl: {
+        require: true, // Supabase requer SSL
+        rejectUnauthorized: false // Para não rejeitar conexões não autorizadas
+      }
+    },
+  });
 
 database.authenticate()
     .then(() => {
