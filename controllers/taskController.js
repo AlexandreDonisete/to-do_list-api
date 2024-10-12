@@ -1,4 +1,5 @@
 const Task = require("../models/taskModel");
+const taskServices = require('../services/taskServices')
 
 const getAllTasks = async (req, res) => {
   const tasks = await Task.findAll();
@@ -7,16 +8,9 @@ const getAllTasks = async (req, res) => {
 };
 
 const getTask = async (req, res) => {
-  const task = await Task.findOne({
-    where: {
-      id: req.params.id,
-    },
-  });
-
-  if (!task) return res.status(404).json({ message: "Task not found" });
-  let status = task !== null ? 200 : 404;
-  res.status(status).json(task);
-};
+  const data = await taskServices.getTaskById(req.params.id);
+  res.status(data.status).json(data);
+}
 
 const createTask = async (req, res) => {
   try {
@@ -39,13 +33,15 @@ const updateTask = async (req, res) => {
 };
 
 const deleteTask = async (req, res) => {
-  const deletedTask = await Task.destroy({
+  const data = await taskServices.getTaskById(req.params.id);
+
+  await Task.destroy({
     where: {
       id: req.params.id,
     },
   });
 
-  res.status(200).json(deletedTask);
+  res.status(data.status).json(data);
 };
 
 module.exports = {
