@@ -22,14 +22,20 @@ const createTask = async (req, res) => {
 };
 
 const updateTask = async (req, res) => {
-  const taskId = parseInt(req.params.id);
+  try {
+    const taskId = parseInt(req.params.id);
 
-  await Task.update(req.body, {
-    where: {
-      id: taskId,
-    },
-  });
-  res.status(200).send();
+    await Task.update(req.body, {
+      where: {
+        id: taskId,
+      },
+    });
+
+    const data = await taskServices.getTaskById(taskId);
+    res.status(data.status).json(data);
+  } catch (err) {
+    console.log("Erro na requisicao: " + err.message);
+  }
 };
 
 const deleteTask = async (req, res) => {
