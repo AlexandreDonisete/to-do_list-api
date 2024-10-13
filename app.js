@@ -15,6 +15,10 @@ app.use(express.json());
 app.use('/tasks', taskRoutes);
 app.use('/users', userRoutes);
 
+app.get('/', (req, res) => {
+    res.send('<h1>To-Do List API feito com carinho pela Xanda, Miguelito e 20tao</h1>');
+  });
+
 
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);
